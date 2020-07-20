@@ -21,7 +21,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.VideoView;
-
 import androidx.annotation.NonNull;
 
 import com.amplifyframework.analytics.AnalyticsEvent;

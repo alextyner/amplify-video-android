@@ -21,7 +21,6 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.MediaController;
 import android.widget.VideoView;
-
 import androidx.annotation.NonNull;
 
 import com.amplifyframework.analytics.AnalyticsCategory;
