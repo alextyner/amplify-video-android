@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.MediaController;
 import android.widget.VideoView;
+
 import androidx.annotation.NonNull;
 
 import com.amplifyframework.analytics.AnalyticsCategory;
@@ -29,6 +30,7 @@ import com.amplifyframework.video.resources.VideoResource;
 import com.amplifyframework.video.resources.VideoResourceType;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * A video player for Amplify Video.
@@ -39,7 +41,7 @@ public abstract class AWSVideoPlayer extends VideoPlayer {
     private MediaController mediaController;
 
     // Analytics.
-    private AnalyticsCategory analyticsCategory;
+    private Optional<AnalyticsCategory> analyticsCategory;
     private boolean autoplay = true;
 
     /**
@@ -47,12 +49,11 @@ public abstract class AWSVideoPlayer extends VideoPlayer {
      * @param videoView The primary {@link VideoView} used by the player.
      */
     protected AWSVideoPlayer(@NonNull VideoView videoView) {
-        attach(videoView);
+        setVideoView(videoView);
     }
 
-    private void attach(@NonNull VideoView videoView) {
+    private void setVideoView(@NonNull VideoView videoView) {
         this.videoView = Objects.requireNonNull(videoView);
-        configureListeners();
     }
 
     /**
@@ -60,14 +61,14 @@ public abstract class AWSVideoPlayer extends VideoPlayer {
      * @param amplifyAnalytics {@link AnalyticsCategory} for AWS PinPoint Analytics, etc.
      */
     public void addAnalytics(AnalyticsCategory amplifyAnalytics) {
-        this.analyticsCategory = Objects.requireNonNull(amplifyAnalytics);
+        this.analyticsCategory = Optional.of(amplifyAnalytics);
     }
 
     /**
      * Use the Amplify Analytics category.
      * @return An {@link AnalyticsCategory} or null.
      */
-    protected AnalyticsCategory getAnalyticsCategory() {
+    protected Optional<AnalyticsCategory> getAnalyticsCategory() {
         return analyticsCategory;
     }
 
@@ -106,14 +107,16 @@ public abstract class AWSVideoPlayer extends VideoPlayer {
 
         Log.d("AWSVIDEO", "Paused.");
 
-        AnalyticsEvent pause = AnalyticsEvent.builder()
-                .name("VideoPause")
-                .addProperty("StreamType", getVideoResource().getType().toString())
-                .addProperty("CurrentPlaybackPosition", getVideoView().getCurrentPosition())
-                .addProperty("StreamLength", getVideoResource().getType().equals(VideoResourceType.LIVE) ? 0
-                        : getVideoView().getDuration())
-                .build();
-        analyticsCategory.recordEvent(pause);
+        analyticsCategory.ifPresent(analytics -> {
+            AnalyticsEvent pause = AnalyticsEvent.builder()
+                    .name("VideoPause")
+                    .addProperty("StreamType", getVideoResource().getType().toString())
+                    .addProperty("CurrentPlaybackPosition", getVideoView().getCurrentPosition())
+                    .addProperty("StreamLength", getVideoResource().getType().equals(VideoResourceType.LIVE) ? 0
+                            : getVideoView().getDuration())
+                    .build();
+            analytics.recordEvent(pause);
+        });
     }
 
     /**
@@ -124,14 +127,16 @@ public abstract class AWSVideoPlayer extends VideoPlayer {
 
         Log.d("AWSVIDEO", "Playing.");
 
-        AnalyticsEvent start = AnalyticsEvent.builder()
-                .name("VideoStart")
-                .addProperty("StreamType", getVideoResource().getType().toString())
-                .addProperty("CurrentPlaybackPosition", getVideoView().getCurrentPosition())
-                .addProperty("StreamLength", getVideoResource().getType().equals(VideoResourceType.LIVE) ? 0 :
-                        getVideoView().getDuration())
-                .build();
-        analyticsCategory.recordEvent(start);
+        analyticsCategory.ifPresent(analytics -> {
+            AnalyticsEvent start = AnalyticsEvent.builder()
+                    .name("VideoStart")
+                    .addProperty("StreamType", getVideoResource().getType().toString())
+                    .addProperty("CurrentPlaybackPosition", getVideoView().getCurrentPosition())
+                    .addProperty("StreamLength", getVideoResource().getType().equals(VideoResourceType.LIVE) ? 0 :
+                            getVideoView().getDuration())
+                    .build();
+            analytics.recordEvent(start);
+        });
     }
 
     /**

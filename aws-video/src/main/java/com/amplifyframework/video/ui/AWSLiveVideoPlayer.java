@@ -21,8 +21,10 @@ import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.VideoView;
+
 import androidx.annotation.NonNull;
 
+import com.amplifyframework.analytics.AnalyticsEvent;
 import com.amplifyframework.video.resources.live.EgressType;
 import com.amplifyframework.video.resources.live.LiveResource;
 
@@ -50,12 +52,29 @@ public class AWSLiveVideoPlayer extends AWSVideoPlayer {
      */
     public void attach(LiveResource liveResource) {
         this.liveResource = Objects.requireNonNull(liveResource);
-        configureFor(liveResource);
+        configureListeners();
+        connect(liveResource);
+
+        getAnalyticsCategory().ifPresent(analytics -> {
+            AnalyticsEvent loadStart = AnalyticsEvent.builder()
+                    .name("LiveStreamLoadStart")
+                    .addProperty("LiveStreamIdentifier", getVideoResource().getIdentifier())
+                    .build();
+            analytics.recordEvent(loadStart);
+        });
     }
 
-    private void configureFor(LiveResource liveResource) {
-        // TODO: try all of the egress types until one isn't null
-        setSourceURI(Uri.parse(liveResource.getEgressPoint(EgressType.MEDIASTORE)));
+    private void connect(LiveResource liveResource) {
+        // Try all of the egress types until one isn't null.
+        for (EgressType type : EgressType.values()) {
+            String egressPoint = liveResource.getEgressPoint(type);
+            if (egressPoint != null) {
+                setSourceURI(Uri.parse(egressPoint));
+                break;
+            }
+        }
+        getVideoView().requestFocus();
+        getVideoView().start();
     }
 
     /**
@@ -73,69 +92,107 @@ public class AWSLiveVideoPlayer extends AWSVideoPlayer {
     protected void configureListeners() {
         super.configureListeners();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            getVideoView().setOnInfoListener(new LiveDisconnectHandler(new Handler(), this, getVideoResource()));
+            getVideoView().setOnInfoListener(new LiveInfoListener());
+        }
+        getVideoView().setOnErrorListener(new LiveErrorListener());
+        getVideoView().setOnPreparedListener(new LivePreparedListener());
+    }
+
+    private class LivePreparedListener implements MediaPlayer.OnPreparedListener {
+
+        @Override
+        public void onPrepared(MediaPlayer mediaPlayer) {
+            getAnalyticsCategory().ifPresent(analytics -> {
+                AnalyticsEvent prepared = AnalyticsEvent.builder()
+                        .name("LiveStreamPrepared")
+                        .addProperty("LiveStreamIdentifier", getVideoResource().getIdentifier())
+                        .build();
+                analytics.recordEvent(prepared);
+            });
         }
     }
 
-    private static class LiveDisconnectHandler implements MediaPlayer.OnInfoListener {
-
+    private class LiveErrorListener implements MediaPlayer.OnErrorListener {
         private static final int RETRY_DELAY = 5000;
+        private Handler handler = new Handler();
+        private Runnable doTryReconnect = () -> {
+            Log.d("AMPAPP", "Attemting to connect to the video stream.");
+            connect(getVideoResource());
+            Log.d("AMPAPP", "Waiting and trying again...");
+        };
 
-        private Handler handler;
-        private boolean disconnected;
-        private Runnable task;
-
-        LiveDisconnectHandler(Handler handler, AWSLiveVideoPlayer player, LiveResource resource) {
-            this.handler = handler;
-            this.task = new Reconnect(this, handler, player, resource);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
         @Override
-        public boolean onInfo(MediaPlayer mediaPlayer, int what, int extra) {
-            switch (what) {
-                case MediaPlayer.MEDIA_INFO_BUFFERING_START:
-                    disconnected = true;
-                    Log.d("AMPERR", "Stream has started buffering...");
-                    handler.postDelayed(task, RETRY_DELAY);
-                    return true;
-                case MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START:
-                    disconnected = false;
-                    Log.d("AMPERR", "Stream has stopped buffering!");
+        public boolean onError(MediaPlayer mediaPlayer, int what, int extra) {
+            switch (extra) {
+                case MediaPlayer.MEDIA_ERROR_IO:
+
+                    getAnalyticsCategory().ifPresent(analytics -> {
+                        AnalyticsEvent disconnect = AnalyticsEvent.builder()
+                                .name("LiveStreamIOError")
+                                .addProperty("LiveStreamIdentifier", getVideoResource().getIdentifier())
+                                .addProperty("CurrentPlaybackPosition", getVideoView().getCurrentPosition())
+                                .build();
+                        analytics.recordEvent(disconnect);
+                    });
+
+                    // Trigger 1 connection re-try event. If it fails, an error will propogate right back
+                    // to this point, triggering another re-try event.
+                    handler.postDelayed(doTryReconnect, RETRY_DELAY);
+
                     return true;
                 default:
                     return false;
             }
         }
+    }
 
-        private class Reconnect implements Runnable {
+    private class LiveInfoListener implements MediaPlayer.OnInfoListener {
+        private static final int RETRY_DELAY = 5000;
+        private Handler handler = new Handler();
+        private Runnable doTryReconnect = () -> {
+            Log.d("AMPAPP", "Attempting to reconnect to the video stream.");
+            connect(getVideoResource());
+            Log.d("AMPAPP", "Waiting and trying again...");
+        };
 
-            private LiveDisconnectHandler listener;
-            private Handler handler;
-            private AWSLiveVideoPlayer player;
-            private LiveResource resource;
+        @Override
+        public boolean onInfo(MediaPlayer mediaPlayer, int what, int extra) {
+            switch (what) {
+                case MediaPlayer.MEDIA_INFO_BUFFERING_START:
+                    Log.d("AMPAPP", "Buffering started...");
 
-            Reconnect(LiveDisconnectHandler listener, Handler handler, AWSLiveVideoPlayer player,
-                      LiveResource resource) {
-                this.listener = listener;
-                this.handler = handler;
-                this.player = player;
-                this.resource = resource;
-            }
+                    getAnalyticsCategory().ifPresent(analytics -> {
+                        AnalyticsEvent bufferStart = AnalyticsEvent.builder()
+                                .name("LiveStreamBufferStart")
+                                .addProperty("LiveStreamIdentifier", getVideoResource().getIdentifier())
+                                .addProperty("CurrentPlaybackPosition", getVideoView().getCurrentPosition())
+                                .build();
+                        analytics.recordEvent(bufferStart);
+                    });
 
-            /**
-             * {@inheritDoc}
-             */
-            @Override
-            public void run() {
-                if (listener.disconnected) {
-                    player.attach(resource);
-                    Log.d("AMPAPP", "Trying to reattach the video resource...");
-                    Log.d("AMPAPP", "Waiting 5s and trying again.");
-                    handler.postDelayed(this, RETRY_DELAY);
-                }
+                    // Buffering triggers 1 connection re-try event after RETRY_DELAY seconds. If the connection
+                    // fails, LiveErrorListener.onError will be called, and another re-try event will be triggered.
+                    handler.postDelayed(doTryReconnect, RETRY_DELAY);
+
+                    return true;
+                case MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START:
+                    Log.d("AMPAPP", "Buffering has stopped, won't try to reconnect.");
+
+                    getAnalyticsCategory().ifPresent(analytics -> {
+                        AnalyticsEvent bufferStop = AnalyticsEvent.builder()
+                                .name("LiveStreamBufferStop")
+                                .addProperty("LiveStreamIdentifier", getVideoResource().getIdentifier())
+                                .addProperty("CurrentPlaybackPosition", getVideoView().getCurrentPosition())
+                                .build();
+                        analytics.recordEvent(bufferStop);
+                    });
+
+                    // If the player signals that buffering has stopped, don't try to reconnect.
+                    handler.removeCallbacks(doTryReconnect);
+
+                    return true;
+                default:
+                    return false;
             }
         }
     }
