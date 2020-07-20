@@ -18,6 +18,7 @@ package com.amplifyframework.video.resources.ondemand;
 import androidx.annotation.NonNull;
 
 import com.amplifyframework.video.resources.VideoResource;
+import com.amplifyframework.video.resources.VideoResourceType;
 
 import java.util.Map;
 import java.util.Objects;
@@ -58,5 +59,13 @@ public class OnDemandResource extends VideoResource {
      */
     public String getOutputPoint(OutputType type) {
         return output.get(type);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public VideoResourceType getType() {
+        return VideoResourceType.ON_DEMAND;
     }
 }

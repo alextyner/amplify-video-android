@@ -20,6 +20,7 @@ import com.amplifyframework.video.resources.VideoResourceType;
 import com.amplifyframework.video.resources.live.EgressType;
 import com.amplifyframework.video.resources.live.IngressType;
 import com.amplifyframework.video.resources.live.LiveResource;
+import com.amplifyframework.video.resources.live.StreamKeyType;
 import com.amplifyframework.video.resources.ondemand.InputType;
 import com.amplifyframework.video.resources.ondemand.OnDemandResource;
 import com.amplifyframework.video.resources.ondemand.OutputType;
@@ -72,10 +73,13 @@ public final class AWSVideoPluginConfigurationReader {
                         JSONObject ingress = videoResource.getJSONObject("ingress");
                         Map<IngressType, String> ingressPoints = readIngressAsMap(ingress);
 
+                        JSONObject keys = videoResource.getJSONObject("keys");
+                        Map<StreamKeyType, String> streamKeys = readStreamKeysAsMap(keys);
+
                         JSONObject egress = videoResource.getJSONObject("egress");
                         Map<EgressType, String> egressPoints = readEgressAsMap(egress);
 
-                        config.addLiveResource(new LiveResource(identifier, ingressPoints, egressPoints));
+                        config.addLiveResource(new LiveResource(identifier, ingressPoints, streamKeys, egressPoints));
                         break;
                     case ON_DEMAND:
                         String input = videoResource.getString("input");
@@ -84,7 +88,7 @@ public final class AWSVideoPluginConfigurationReader {
 
                         String output = videoResource.getString("output");
                         Map<OutputType, String> outputMethods = new HashMap<>();
-                        outputMethods.put(OutputType.S3_BUCKET, output);
+                        outputMethods.put(OutputType.BASE_URL, output);
 
                         config.addOnDemandResource(new OnDemandResource(identifier, inputMethods, outputMethods));
                         break;
@@ -123,6 +127,17 @@ public final class AWSVideoPluginConfigurationReader {
             String key = iter.next();
             String value = jsonObject.getString(key);
             map.put(EgressType.fromKey(key), value);
+        }
+        return map;
+    }
+
+    private static Map<StreamKeyType, String> readStreamKeysAsMap(JSONObject jsonObject) throws JSONException {
+        Map<StreamKeyType, String> map = new HashMap<>();
+        Iterator<String> iter = jsonObject.keys();
+        while (iter.hasNext()) {
+            String key = iter.next();
+            String value = jsonObject.getString(key);
+            map.put(StreamKeyType.fromKey(key), value);
         }
         return map;
     }

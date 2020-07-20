@@ -22,7 +22,7 @@ import java.util.Objects;
 /**
  * A video resource.
  */
-public class VideoResource {
+public abstract class VideoResource {
 
     private String identifier;
 
@@ -41,5 +41,11 @@ public class VideoResource {
     public String getIdentifier() {
         return identifier;
     }
+
+    /**
+     * Get the type of resource that this is.
+     * @return One of {@link VideoResourceType}.
+     */
+    public abstract VideoResourceType getType();
 
 }

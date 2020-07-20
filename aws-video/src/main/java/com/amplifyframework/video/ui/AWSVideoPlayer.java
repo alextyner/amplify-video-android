@@ -15,46 +15,60 @@
 
 package com.amplifyframework.video.ui;
 
+import android.annotation.SuppressLint;
 import android.net.Uri;
-import android.view.View;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.widget.MediaController;
 import android.widget.VideoView;
 import androidx.annotation.NonNull;
 
-import com.amplifyframework.video.event.PauseEvent;
+import com.amplifyframework.analytics.AnalyticsCategory;
+import com.amplifyframework.analytics.AnalyticsEvent;
+import com.amplifyframework.video.resources.VideoResource;
+import com.amplifyframework.video.resources.VideoResourceType;
 
 import java.util.Objects;
-import java.util.function.BiConsumer;
 
 /**
  * A video player for Amplify Video.
  */
-public class AWSVideoPlayer extends VideoPlayer {
+public abstract class AWSVideoPlayer extends VideoPlayer {
 
     private VideoView videoView;
     private MediaController mediaController;
 
-    // Event callbacks
-    private BiConsumer<View, PauseEvent> onPause;
+    // Analytics.
+    private AnalyticsCategory analyticsCategory;
+    private boolean autoplay = true;
 
     /**
      * Create a new {@link AWSVideoPlayer} composed of a {@link VideoView}.
      * @param videoView The primary {@link VideoView} used by the player.
      */
-    public AWSVideoPlayer(@NonNull VideoView videoView) {
+    protected AWSVideoPlayer(@NonNull VideoView videoView) {
         attach(videoView);
     }
 
     private void attach(@NonNull VideoView videoView) {
         this.videoView = Objects.requireNonNull(videoView);
+        configureListeners();
     }
 
     /**
-     * Set a callback for when the player is paused.
-     * @param callback Consumer called on a pause event.
+     * Record player actions to an Amplify Analytics provider.
+     * @param amplifyAnalytics {@link AnalyticsCategory} for AWS PinPoint Analytics, etc.
      */
-    public void onPause(BiConsumer<View, PauseEvent> callback) {
-        onPause = Objects.requireNonNull(callback);
+    public void addAnalytics(AnalyticsCategory amplifyAnalytics) {
+        this.analyticsCategory = Objects.requireNonNull(amplifyAnalytics);
+    }
+
+    /**
+     * Use the Amplify Analytics category.
+     * @return An {@link AnalyticsCategory} or null.
+     */
+    protected AnalyticsCategory getAnalyticsCategory() {
+        return analyticsCategory;
     }
 
     /**
@@ -63,6 +77,9 @@ public class AWSVideoPlayer extends VideoPlayer {
      */
     public void setSourceURI(Uri uri) {
         videoView.setVideoURI(uri);
+        if (autoplay) {
+            videoView.setOnPreparedListener(player -> player.start());
+        }
     }
 
     /**
@@ -74,17 +91,54 @@ public class AWSVideoPlayer extends VideoPlayer {
     }
 
     /**
+     * Access the underlying {@link MediaController}.
+     * @return The {@link MediaController} used by the {@link VideoView}. May be null.
+     */
+    public MediaController getMediaController() {
+        return mediaController;
+    }
+
+    /**
      * Pause video playback.
      */
     public void pause() {
         videoView.pause();
-        onPause.accept(videoView, new PauseEvent());
+
+        Log.d("AWSVIDEO", "Paused.");
+
+        AnalyticsEvent pause = AnalyticsEvent.builder()
+                .name("VideoPause")
+                .addProperty("StreamType", getVideoResource().getType().toString())
+                .addProperty("CurrentPlaybackPosition", getVideoView().getCurrentPosition())
+                .addProperty("StreamLength", getVideoResource().getType().equals(VideoResourceType.LIVE) ? 0
+                        : getVideoView().getDuration())
+                .build();
+        analyticsCategory.recordEvent(pause);
+    }
+
+    /**
+     * Start video playback.
+     */
+    public void start() {
+        videoView.start();
+
+        Log.d("AWSVIDEO", "Playing.");
+
+        AnalyticsEvent start = AnalyticsEvent.builder()
+                .name("VideoStart")
+                .addProperty("StreamType", getVideoResource().getType().toString())
+                .addProperty("CurrentPlaybackPosition", getVideoView().getCurrentPosition())
+                .addProperty("StreamLength", getVideoResource().getType().equals(VideoResourceType.LIVE) ? 0 :
+                        getVideoView().getDuration())
+                .build();
+        analyticsCategory.recordEvent(start);
     }
 
     /**
      * Add controls to this player.
      */
     public void addControls() {
+        // TODO: controls don't seem to show up when added this way
         MediaController mediaController = new MediaController(videoView.getContext());
         setMediaController(mediaController);
     }
@@ -99,6 +153,31 @@ public class AWSVideoPlayer extends VideoPlayer {
     private void setMediaController(MediaController mediaController) {
         this.mediaController = mediaController;
         videoView.setMediaController(mediaController);
+        mediaController.setAnchorView(videoView);
     }
+
+    /**
+     * Configure any action listeners.
+     */
+    @SuppressLint("ClickableViewAccessibility")
+    protected void configureListeners() {
+        videoView.setOnTouchListener((view, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                if (videoView.isPlaying()) {
+                    pause();
+                } else {
+                    start();
+                }
+                return true;
+            }
+            return false;
+        });
+    }
+
+    /**
+     * Get the underlying {@link VideoResource} managed by this player.
+     * @return An Amplify {@link VideoResource}.
+     */
+    public abstract VideoResource getVideoResource();
 
 }

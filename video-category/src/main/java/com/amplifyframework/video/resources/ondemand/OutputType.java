@@ -20,9 +20,10 @@ package com.amplifyframework.video.resources.ondemand;
  */
 public enum OutputType {
     /**
-     * An output S3 bucket, typically the full resource name.
+     * An output URL; typically the full resource name, but not a valid URI.
+     * May be at S3 or CloudFront depending on the environment.
      */
-    S3_BUCKET("output");
+    BASE_URL("output");
 
     private String key;
 
