@@ -40,7 +40,7 @@ public abstract class AWSVideoPlayer extends VideoPlayer {
     private MediaController mediaController;
 
     // Analytics.
-    private Optional<AnalyticsCategory> analyticsCategory;
+    private Optional<AnalyticsCategory> analyticsCategory = Optional.empty();
     private boolean autoplay = true;
 
     /**
