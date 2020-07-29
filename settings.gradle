@@ -14,7 +14,6 @@
  */
 
 //Core Components
-include ':video-category'
 
 // Plugin Modules
 include ':aws-video'

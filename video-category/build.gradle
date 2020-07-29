@@ -18,22 +18,14 @@ apply from: rootProject.file("configuration/checkstyle.gradle")
 apply from: rootProject.file("configuration/publishing.gradle")
 
 dependencies {
+    // Amplify Android
     implementation 'com.amplifyframework:core:1.0.0'
-    implementation 'com.amplifyframework:extended:master' // TODO use published resource and remove mavenLocal()
 
+    // Amplify Extended
+    implementation 'com.amplifyframework:extended' // TODO use published resource and remove mavenLocal()
+
+    // Android
     implementation dependency.androidx.v4support
     implementation dependency.androidx.annotation
 
-//    testImplementation dependency.junit
-//    testImplementation (dependency.robolectric) {
-//        // https://github.com/robolectric/robolectric/issues/5245
-//        exclude group: 'com.google.auto.service', module: 'auto-service'
-//    }
-//    testImplementation dependency.androidx.test.core
-//    testImplementation dependency.jsonassert
-//
-//    androidTestImplementation dependency.androidx.annotation
-//    androidTestImplementation dependency.androidx.test.core
-//    androidTestImplementation dependency.androidx.test.runner
-//    androidTestImplementation dependency.androidx.test.junit
 }

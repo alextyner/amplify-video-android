@@ -13,17 +13,21 @@
  * permissions and limitations under the License.
  */
 
-package com.amplifyframework.video.resources.ondemand;
+package com.amplifyframework.extended.video.resources.ondemand;
 
 /**
  * Types of output for VOD streaming.
  */
 public enum OutputType {
     /**
-     * An output URL; typically the full resource name, but not a valid URI.
-     * May be at S3 or CloudFront depending on the environment.
+     * An output URL; valid URI. May be at S3 or CloudFront depending on the environment.
      */
-    BASE_URL("output");
+    BASE_URL("outputUrl"),
+
+    /**
+     * Name of the S3 bucket where VoD outputs go.
+     */
+    S3_BUCKET_NAME("output");
 
     private String key;
 

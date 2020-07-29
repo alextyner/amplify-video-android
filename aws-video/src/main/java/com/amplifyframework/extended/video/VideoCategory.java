@@ -13,15 +13,15 @@
  * permissions and limitations under the License.
  */
 
-package com.amplifyframework.video;
+package com.amplifyframework.extended.video;
 
 import android.net.Uri;
 import androidx.annotation.NonNull;
 
 import com.amplifyframework.core.category.CategoryType;
 import com.amplifyframework.extended.ExtendedCategory;
-import com.amplifyframework.video.resources.live.LiveResource;
-import com.amplifyframework.video.resources.ondemand.OnDemandResource;
+import com.amplifyframework.extended.video.resources.live.LiveResource;
+import com.amplifyframework.extended.video.resources.ondemand.OnDemandResource;
 
 import java.util.Collection;
 

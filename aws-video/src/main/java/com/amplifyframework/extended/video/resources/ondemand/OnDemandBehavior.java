@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-package com.amplifyframework.video.resources.ondemand;
+package com.amplifyframework.extended.video.resources.ondemand;
 
 import java.util.Collection;
 

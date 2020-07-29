@@ -13,12 +13,12 @@
  * permissions and limitations under the License.
  */
 
-package com.amplifyframework.video.resources.ondemand;
+package com.amplifyframework.extended.video.resources.ondemand;
 
 import androidx.annotation.NonNull;
 
-import com.amplifyframework.video.resources.VideoResource;
-import com.amplifyframework.video.resources.VideoResourceType;
+import com.amplifyframework.extended.video.resources.VideoResource;
+import com.amplifyframework.extended.video.resources.VideoResourceType;
 
 import java.util.Map;
 import java.util.Objects;

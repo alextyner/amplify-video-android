@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-package com.amplifyframework.video;
+package com.amplifyframework.extended.video;
 
 import android.content.Context;
 import androidx.annotation.NonNull;

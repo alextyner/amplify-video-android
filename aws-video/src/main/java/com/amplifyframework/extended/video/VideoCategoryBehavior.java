@@ -13,12 +13,12 @@
  * permissions and limitations under the License.
  */
 
-package com.amplifyframework.video;
+package com.amplifyframework.extended.video;
 
 import android.net.Uri;
 
-import com.amplifyframework.video.resources.live.LiveBehavior;
-import com.amplifyframework.video.resources.ondemand.OnDemandBehavior;
+import com.amplifyframework.extended.video.resources.live.LiveBehavior;
+import com.amplifyframework.extended.video.resources.ondemand.OnDemandBehavior;
 
 /**
  * Video category behaviors include live and on-demand operations.

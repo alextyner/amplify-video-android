@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-package com.amplifyframework.video.resources;
+package com.amplifyframework.extended.video.resources;
 
 /**
  * Types of video resources.

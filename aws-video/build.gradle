@@ -19,19 +19,7 @@ apply from: rootProject.file("configuration/publishing.gradle")
 
 dependencies {
     implementation 'com.amplifyframework:core:1.0.0'
-    implementation project(path: ':video-category')
+    implementation 'com.amplifyframework:extended:0.1.7'
 
-    implementation dependency.androidx.appcompat
-
-//    testImplementation dependency.junit
-//    testImplementation dependency.mockito
-//    testImplementation (dependency.robolectric) {
-//        // https://github.com/robolectric/robolectric/issues/5245
-//        exclude group: 'com.google.auto.service', module: 'auto-service'
-//    }
-//    testImplementation dependency.androidx.test.core
-//
-//    androidTestImplementation dependency.androidx.annotation
-//    androidTestImplementation dependency.androidx.test.runner
-//    androidTestImplementation dependency.androidx.test.junit
+    //implementation dependency.androidx.appcompat
 }

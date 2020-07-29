@@ -15,15 +15,13 @@
 
 package com.amplifyframework.video.config;
 
-import com.amplifyframework.video.VideoException;
-import com.amplifyframework.video.resources.VideoResourceType;
-import com.amplifyframework.video.resources.live.EgressType;
-import com.amplifyframework.video.resources.live.IngressType;
-import com.amplifyframework.video.resources.live.LiveResource;
-import com.amplifyframework.video.resources.live.StreamKeyType;
-import com.amplifyframework.video.resources.ondemand.InputType;
-import com.amplifyframework.video.resources.ondemand.OnDemandResource;
-import com.amplifyframework.video.resources.ondemand.OutputType;
+import com.amplifyframework.extended.video.VideoException;
+import com.amplifyframework.extended.video.resources.VideoResourceType;
+import com.amplifyframework.extended.video.resources.live.EgressType;
+import com.amplifyframework.extended.video.resources.live.LiveResource;
+import com.amplifyframework.extended.video.resources.ondemand.InputType;
+import com.amplifyframework.extended.video.resources.ondemand.OnDemandResource;
+import com.amplifyframework.extended.video.resources.ondemand.OutputType;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -70,25 +68,24 @@ public final class AWSVideoPluginConfigurationReader {
                 VideoResourceType type = VideoResourceType.from(videoResource.getString("type"));
                 switch (type) {
                     case LIVE:
-                        JSONObject ingress = videoResource.getJSONObject("ingress");
-                        Map<IngressType, String> ingressPoints = readIngressAsMap(ingress);
-
-                        JSONObject keys = videoResource.getJSONObject("keys");
-                        Map<StreamKeyType, String> streamKeys = readStreamKeysAsMap(keys);
-
                         JSONObject egress = videoResource.getJSONObject("egress");
                         Map<EgressType, String> egressPoints = readEgressAsMap(egress);
 
-                        config.addLiveResource(new LiveResource(identifier, ingressPoints, streamKeys, egressPoints));
+                        config.addLiveResource(new LiveResource(identifier, egressPoints));
                         break;
                     case ON_DEMAND:
                         String input = videoResource.getString("input");
                         Map<InputType, String> inputMethods = new HashMap<>();
                         inputMethods.put(InputType.S3_BUCKET_NAME, input);
 
-                        String output = videoResource.getString("output");
                         Map<OutputType, String> outputMethods = new HashMap<>();
-                        outputMethods.put(OutputType.BASE_URL, output);
+                        String outputS3 = videoResource.getString("output");
+                        outputMethods.put(OutputType.S3_BUCKET_NAME, outputS3);
+
+                        String outputUrl = videoResource.getString("outputUrl");
+                        if (outputUrl != null) { // Not always present
+                            outputMethods.put(OutputType.BASE_URL, outputUrl);
+                        }
 
                         config.addOnDemandResource(new OnDemandResource(identifier, inputMethods, outputMethods));
                         break;
@@ -109,17 +106,6 @@ public final class AWSVideoPluginConfigurationReader {
         }
     }
 
-    private static Map<IngressType, String> readIngressAsMap(JSONObject jsonObject) throws JSONException {
-        Map<IngressType, String> map = new HashMap<>();
-        Iterator<String> iter = jsonObject.keys();
-        while (iter.hasNext()) {
-            String key = iter.next();
-            String value = jsonObject.getString(key);
-            map.put(IngressType.fromKey(key), value);
-        }
-        return map;
-    }
-
     private static Map<EgressType, String> readEgressAsMap(JSONObject jsonObject) throws JSONException {
         Map<EgressType, String> map = new HashMap<>();
         Iterator<String> iter = jsonObject.keys();
@@ -127,17 +113,6 @@ public final class AWSVideoPluginConfigurationReader {
             String key = iter.next();
             String value = jsonObject.getString(key);
             map.put(EgressType.fromKey(key), value);
-        }
-        return map;
-    }
-
-    private static Map<StreamKeyType, String> readStreamKeysAsMap(JSONObject jsonObject) throws JSONException {
-        Map<StreamKeyType, String> map = new HashMap<>();
-        Iterator<String> iter = jsonObject.keys();
-        while (iter.hasNext()) {
-            String key = iter.next();
-            String value = jsonObject.getString(key);
-            map.put(StreamKeyType.fromKey(key), value);
         }
         return map;
     }

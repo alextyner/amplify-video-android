@@ -15,8 +15,8 @@
 
 package com.amplifyframework.video.config;
 
-import com.amplifyframework.video.resources.live.LiveResource;
-import com.amplifyframework.video.resources.ondemand.OnDemandResource;
+import com.amplifyframework.extended.video.resources.live.LiveResource;
+import com.amplifyframework.extended.video.resources.ondemand.OnDemandResource;
 
 import java.util.HashMap;
 import java.util.Map;

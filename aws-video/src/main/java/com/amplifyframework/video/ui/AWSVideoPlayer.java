@@ -15,18 +15,13 @@
 
 package com.amplifyframework.video.ui;
 
-import android.annotation.SuppressLint;
 import android.net.Uri;
-import android.util.Log;
-import android.view.MotionEvent;
-import android.widget.MediaController;
 import android.widget.VideoView;
 import androidx.annotation.NonNull;
 
 import com.amplifyframework.analytics.AnalyticsCategory;
-import com.amplifyframework.analytics.AnalyticsEvent;
-import com.amplifyframework.video.resources.VideoResource;
-import com.amplifyframework.video.resources.VideoResourceType;
+import com.amplifyframework.extended.video.resources.VideoResource;
+import com.amplifyframework.extended.video.ui.VideoPlayer;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -37,7 +32,6 @@ import java.util.Optional;
 public abstract class AWSVideoPlayer extends VideoPlayer {
 
     private VideoView videoView;
-    private MediaController mediaController;
 
     // Analytics.
     private Optional<AnalyticsCategory> analyticsCategory = Optional.empty();
@@ -91,97 +85,25 @@ public abstract class AWSVideoPlayer extends VideoPlayer {
     }
 
     /**
-     * Access the underlying {@link MediaController}.
-     * @return The {@link MediaController} used by the {@link VideoView}. May be null.
-     */
-    public MediaController getMediaController() {
-        return mediaController;
-    }
-
-    /**
-     * Pause video playback.
-     */
-    public void pause() {
-        videoView.pause();
-
-        Log.d("AWSVIDEO", "Paused.");
-
-        analyticsCategory.ifPresent(analytics -> {
-            AnalyticsEvent pause = AnalyticsEvent.builder()
-                    .name("VideoPause")
-                    .addProperty("StreamType", getVideoResource().getType().toString())
-                    .addProperty("CurrentPlaybackPosition", getVideoView().getCurrentPosition())
-                    .addProperty("StreamLength", getVideoResource().getType().equals(VideoResourceType.LIVE) ? 0
-                            : getVideoView().getDuration())
-                    .build();
-            analytics.recordEvent(pause);
-        });
-    }
-
-    /**
-     * Start video playback.
-     */
-    public void start() {
-        videoView.start();
-
-        Log.d("AWSVIDEO", "Playing.");
-
-        analyticsCategory.ifPresent(analytics -> {
-            AnalyticsEvent start = AnalyticsEvent.builder()
-                    .name("VideoStart")
-                    .addProperty("StreamType", getVideoResource().getType().toString())
-                    .addProperty("CurrentPlaybackPosition", getVideoView().getCurrentPosition())
-                    .addProperty("StreamLength", getVideoResource().getType().equals(VideoResourceType.LIVE) ? 0 :
-                            getVideoView().getDuration())
-                    .build();
-            analytics.recordEvent(start);
-        });
-    }
-
-    /**
-     * Add controls to this player.
-     */
-    public void addControls() {
-        // TODO: controls don't seem to show up when added this way
-        MediaController mediaController = new MediaController(videoView.getContext());
-        setMediaController(mediaController);
-    }
-
-    /**
-     * Remove controls from this player.
-     */
-    public void removeControls() {
-        setMediaController(null);
-    }
-
-    private void setMediaController(MediaController mediaController) {
-        this.mediaController = mediaController;
-        videoView.setMediaController(mediaController);
-        mediaController.setAnchorView(videoView);
-    }
-
-    /**
-     * Configure any action listeners.
-     */
-    @SuppressLint("ClickableViewAccessibility")
-    protected void configureListeners() {
-        videoView.setOnTouchListener((view, event) -> {
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                if (videoView.isPlaying()) {
-                    pause();
-                } else {
-                    start();
-                }
-                return true;
-            }
-            return false;
-        });
-    }
-
-    /**
      * Get the underlying {@link VideoResource} managed by this player.
      * @return An Amplify {@link VideoResource}.
      */
     public abstract VideoResource getVideoResource();
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public long getDuration() {
+        return getVideoView().getDuration();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public long getCurrentPosition() {
+        return getVideoView().getCurrentPosition();
+    }
 
 }

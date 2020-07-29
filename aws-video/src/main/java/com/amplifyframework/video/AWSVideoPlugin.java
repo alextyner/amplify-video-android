@@ -21,10 +21,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.amplifyframework.core.category.CategoryType;
+import com.amplifyframework.extended.video.VideoException;
+import com.amplifyframework.extended.video.VideoPlugin;
+import com.amplifyframework.extended.video.resources.live.LiveResource;
+import com.amplifyframework.extended.video.resources.ondemand.OnDemandResource;
 import com.amplifyframework.video.config.AWSVideoPluginConfiguration;
 import com.amplifyframework.video.config.AWSVideoPluginConfigurationReader;
-import com.amplifyframework.video.resources.live.LiveResource;
-import com.amplifyframework.video.resources.ondemand.OnDemandResource;
 
 import org.json.JSONObject;
 

@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-package com.amplifyframework.video.resources.ondemand;
+package com.amplifyframework.extended.video.resources.ondemand;
 
 /**
  * Types of input for VOD streaming.

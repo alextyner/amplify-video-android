@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-package com.amplifyframework.video.resources.live;
+package com.amplifyframework.extended.video.resources.live;
 
 /**
  * Various live streaming protocols.

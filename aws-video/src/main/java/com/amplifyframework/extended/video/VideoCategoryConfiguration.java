@@ -13,11 +13,28 @@
  * permissions and limitations under the License.
  */
 
-package com.amplifyframework.video.ui;
+package com.amplifyframework.extended.video;
+
+import com.amplifyframework.extended.ExtendedCategoryConfiguration;
 
 /**
- * A video player for Amplify Video.
+ * Configurations for all plugins of the Video category.
  */
-public abstract class VideoPlayer {
-    
+public final class VideoCategoryConfiguration extends ExtendedCategoryConfiguration {
+
+    /**
+     * Constructs a new DataStoreCategoryConfiguration.
+     */
+    public VideoCategoryConfiguration() {
+        super();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getExtendedCategoryType() {
+        return "video";
+    }
+
 }
