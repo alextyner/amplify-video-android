@@ -8,18 +8,18 @@ New to AWS Amplify or Amplify Video? Consider following one of the [tutorials or
 
 1. Create a new Android Studio project with an **Empty Activity**.
 
-![Screen Shot 2020-07-29 at 3.06.21 PM](docs/img/README/Screen Shot 2020-07-29 at 3.06.21 PM.png)
+![Screen Shot 2020-07-29 at 3.06.21 PM](./docs/img/README/Screen Shot 2020-07-29 at 3.06.21 PM.png)
 
 2. Give your project a name and **finish** project creation.
 
-![Screen Shot 2020-07-29 at 3.09.37 PM](docs/img/README/Screen Shot 2020-07-29 at 3.09.37 PM.png)
+![Screen Shot 2020-07-29 at 3.09.37 PM](./docs/img/README/Screen Shot 2020-07-29 at 3.09.37 PM.png)
 
 3. At the top level of your project directory, initialize an Amplify project and an Amplify Video live streaming resource.
    	**Follow the [Getting Started with Live](https://github.com/awslabs/amplify-video/wiki/Getting-Started-with-Live) guide.**
 
 4. Open the the **build.gradle** script for your new **app** module.
 
-![Screen Shot 2020-07-29 at 3.13.49 PM](docs/img/README/Screen Shot 2020-07-29 at 3.13.49 PM.png)
+![Screen Shot 2020-07-29 at 3.13.49 PM](./docs/img/README/Screen Shot 2020-07-29 at 3.13.49 PM.png)
 
 5. Modify the **dependencies** section to include *amplify-android*, *amplify-android-extended* and *amplify-video-android*:
 
