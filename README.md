@@ -99,9 +99,9 @@ android {
         player.play();
 ```
 
-11. If you haven't already, begin streaming to the **MediaLive ingest URL** provided by Amplify Video.
+11. If you haven't already, begin streaming to the **MediaLive ingest URI** provided by Amplify Video.
 
-    The URL can be viewed again by using `amplify video get-info`.
+    The URI can be viewed again by using `amplify video get-info`.
 
 12. Launch your app and view the live stream.
 
