@@ -170,7 +170,7 @@ $ amplify push
 
 
 
-#### Using a Custom Video View
+### Using a Custom Video View
 
 Any class that extends `VideoView` can be used to display Amplify Video streams (even `VideoView` itself).
 
