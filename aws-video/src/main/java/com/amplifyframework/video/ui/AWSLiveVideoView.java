@@ -67,7 +67,7 @@ public class AWSLiveVideoView extends VideoView {
                 Log.i("AWSLivePlayer", "Preparing.");
                 getPlayer().getAnalyticsCategory().ifPresent(analytics -> {
                     AnalyticsEvent preparing = AnalyticsEvent.builder()
-                            .name("LiveStreamReady")
+                            .name("LiveStreamPreparing")
                             .addProperty("LiveStreamIdentifier", getPlayer().getVideoResource().getIdentifier())
                             .addProperty("TotalDuration", (double) totalDuration)
                             .build();
